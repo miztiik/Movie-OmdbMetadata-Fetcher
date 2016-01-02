@@ -30,11 +30,12 @@ function readYearTitle() {
     for (var d = 0; d < mTY.length; d++) {
         //Lets do the metadata search only for items which has title.
         if (mTY[d][1] != '') {
+            // Preparing the 'mMultipleTitles' global variable so each time it has the proper prefix, after clearing the cache from previous iteration
             mMultipleTitles = "Multiple Titles Found:";
             searchOmdb(mTY[d][0], mTY[d][1], d + 2);
         }
     }
-  Logger.log("Total of " + mTY.length + "Rows updated!!!");
+    Logger.log("Total of " + mTY.length + " Rows updated!!");
 }
 
 // Function to search for all media for the given title in OMDB
@@ -68,9 +69,9 @@ function searchOmdb(mYear, mTitle, rID) {
     if (jsonArray.hasOwnProperty("Search")) {
         // Lets check if there are multiple media with the same title
         // getMatchingTitles returns '0' length object when no exact matches found
-      
+
         //var mArr = getMatchingTitles(jsonArray, 'Title', mTitle.toUpperCase());
-      var mArr = getMatchingTitles(jsonArray, 'Title', mTitle);
+        var mArr = getMatchingTitles(jsonArray, 'Title', mTitle);
 
         /* Five possible cases here
            # 0 - 'No Exact Matches' found although there are results from OMDB (Array Length from 'getMatchingTitles' will be 0)
@@ -79,7 +80,7 @@ function searchOmdb(mYear, mTitle, rID) {
            # 'No media found' for the given title
            # 'Not able to connect' - Yet to be written      
         */
-      
+
         if (mArr.length == 0) {
             // When there is no 'exact match' of title with the media found in OMDB
             rows.push([mMultipleTitles]);
@@ -195,13 +196,17 @@ function getColIndexByName(mSheet, colName) {
 // @param {value} Any value the key might contain
 function getMatchingTitles(obj, key, val) {
     var objects = [];
+    // Need to convert to UpperCase only for 'Alphanumeric' Movie Titles, Movie titles with just numbers like '300' fails.
+    var isNum = /^\d+$/.test(val);
+    if (!isNum) {
+        val = val.toUpperCase();
+    }
     for (var i in obj) {
         if (!obj.hasOwnProperty(i)) continue;
         if (typeof obj[i] == 'object') {
             objects = objects.concat(getMatchingTitles(obj[i], key, val));
         } else
         // if key matches and value matches or if key matches and value is not passed (eliminating the case where key matches but passed value does not)
-		// Need to convert to UpperCase only for 'Alphanumeric' Strings, Movie titles with just numbers like '300' fails.
         if (i == key && obj[i].toUpperCase() == val || i == key && val == '') {
             objects.push(obj);
         } else if (obj[i].toUpperCase() == val && key == '') {
