@@ -110,7 +110,11 @@ function searchOmdb(mYear, mTitle, rID) {
     // Another case will need to be written for not able to connect scenario
 }
 
-// Function to get the meta data for the exact matches through the OMDB API using the IMDB ID flag
+/* Function to get the meta data for the exact matches through the OMDB API using the IMDB ID flag
+@param {Array} - An array of movie titles
+@param {Number} The row to which the data needs to be written
+*/
+
 function getOmdbMetaData(mArr, rID) {
     for (i = 0; i < mArr.length; i++) {
         // Check if the IMDB ID is present in the array
