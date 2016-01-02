@@ -66,7 +66,7 @@ function searchOmdb(mYear, mTitle, rID) {
       /* Five possible cases here
          # 0 - 'No Exact Matches' found although there are results from OMDB (Array Length from 'getMatchingTitles' will be 0)
          # 1 - 'Exact Match' of Title or both Title & Year (Array Length from 'getMatchingTitles' will be 1)
-         # 2 or higher - 'Multiple exact matches' found in the result (Array Length from 'getMatchingTitles' will be >2)
+         # 2 & > - 'Multiple exact matches' found in the result (Array Length from 'getMatchingTitles' will be >2)
          # 
       
       */
@@ -204,6 +204,32 @@ function getMatchingTitles(obj, key, val) {
                 // Collect the 'Year' if the key and value are not matching, so we can show them to user
                 mMultipleTitles = mMultipleTitles.concat(obj[i] + '"');
             }
+    }
+    return objects;
+}
+}
+
+function getMatchingTitles(obj, key, val) {
+    var objects = [];
+    for (var i in obj) {
+        if (!obj.hasOwnProperty(i)) continue;
+        if (typeof obj[i] == 'object') {
+            objects = objects.concat(getMatchingTitles(obj[i], key, val));    
+        } else 
+        // if key matches and value matches or if key matches and value is not passed (eliminating the case where key matches but passed value does not)
+        if (i == key && obj[i].toUpperCase() == val || i == key && val == '') {
+            objects.push(obj);
+        } else if (obj[i].toUpperCase() == val && key == '') {
+            // only add if the object is not already in the array
+            if (objects.lastIndexOf(obj) == -1) {
+                objects.push(obj);
+            }
+        } else if (i == key && val != '') {
+                // Collect the 'Title's' if the key and value are not matching, so we can show them to user
+                mMultipleTitles = mMultipleTitles.concat(' ' + '"' + obj[i] + ':');
+        } else if (i == 'Year' && val != '') {
+                // Collect the 'Year' if the key and value are not matching, so we can show them to user
+                mMultipleTitles = mMultipleTitles.concat(obj[i] + '"');
         }
     }
     return objects;
