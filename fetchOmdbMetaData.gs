@@ -75,7 +75,7 @@ function searchOmdb(mYear, mTitle, rID) {
             for (var obj in mArr) {
                 if (mArr.hasOwnProperty(obj)) {
                     if (mArr[obj].hasOwnProperty('Year') && mArr[obj].hasOwnProperty('Title')) {
-                        dupTitles += '"' + mArr[obj]['Year'] + ':' + mArr[obj]['Title'] + '" ';
+                        dupTitles = dupTitles.concat(' "' + mArr[obj]['Year'] + ':' + mArr[obj]['Title'] + '"');
                     }
                 }
             }
@@ -191,10 +191,13 @@ function getMatchingTitles(obj, key, val) {
             // only add if the object is not already in the array
             if (objects.lastIndexOf(obj) == -1) {
                 objects.push(obj);
+            } else if (i == key && val != '') {
+                // Collect the 'Title's' if the key and value are not matching, so we can show them to user
+                mMultipleTitles = mMultipleTitles.concat(' ' + '"' + obj[i] + ':');
+            } else if (i == 'Year' && val != '') {
+                // Collect the 'Year' if the key and value are not matching, so we can show them to user
+                mMultipleTitles = mMultipleTitles.concat(obj[i] + '"');
             }
-        } else if (i == key && val != '') {
-            // Collect the titles if the key and value are not matching, so we can show them to user
-            mMultipleTitles = mMultipleTitles.concat(obj[i] + ',');
         }
     }
     return objects;
