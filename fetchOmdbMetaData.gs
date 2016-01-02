@@ -9,7 +9,13 @@ var todaysDate = Utilities.formatDate(new Date(), 'GMT+5:30', 'dd/MM/yyyy HH:mm'
     mMultipleColor = 'Green',
     mMultipleTitles;
 
+// Measure execution time
+var startTime = new Date().getTime();
+
 readYearTitle();
+
+Logger.log("Fetching Metadata from OMDB & Post Processing took " + (new Date().getTime() - startTime) + " milliseconds.");
+
 // Function to read the movie title and year from the sheet , assuming the previous two cells on the same row contain this data
 function readYearTitle() {
     //The last row in the "sheet" with content
@@ -28,6 +34,7 @@ function readYearTitle() {
             searchOmdb(mTY[d][0], mTY[d][1], d + 2);
         }
     }
+  Logger.log("Total of " + mTY.length + "Rows updated!!!");
 }
 
 // Function to search for all media for the given title in OMDB
@@ -61,15 +68,18 @@ function searchOmdb(mYear, mTitle, rID) {
     if (jsonArray.hasOwnProperty("Search")) {
         // Lets check if there are multiple media with the same title
         // getMatchingTitles returns '0' length object when no exact matches found
-        var mArr = getMatchingTitles(jsonArray, 'Title', mTitle.toUpperCase());
       
-      /* Five possible cases here
-         # 0 - 'No Exact Matches' found although there are results from OMDB (Array Length from 'getMatchingTitles' will be 0)
-         # 1 - 'Exact Match' of Title or both Title & Year (Array Length from 'getMatchingTitles' will be 1)
-         # 2 & > - 'Multiple exact matches' found in the result (Array Length from 'getMatchingTitles' will be >2)
-         # 
+        //var mArr = getMatchingTitles(jsonArray, 'Title', mTitle.toUpperCase());
+      var mArr = getMatchingTitles(jsonArray, 'Title', mTitle);
+
+        /* Five possible cases here
+           # 0 - 'No Exact Matches' found although there are results from OMDB (Array Length from 'getMatchingTitles' will be 0)
+           # 1 - 'Exact Match' of Title or both Title & Year (Array Length from 'getMatchingTitles' will be 1)
+           # 2 & > - 'Multiple exact matches' found in the result (Array Length from 'getMatchingTitles' will be >2)
+           # 'No media found' for the given title
+           # 'Not able to connect' - Yet to be written      
+        */
       
-      */
         if (mArr.length == 0) {
             // When there is no 'exact match' of title with the media found in OMDB
             rows.push([mMultipleTitles]);
@@ -191,32 +201,7 @@ function getMatchingTitles(obj, key, val) {
             objects = objects.concat(getMatchingTitles(obj[i], key, val));
         } else
         // if key matches and value matches or if key matches and value is not passed (eliminating the case where key matches but passed value does not)
-        if (i == key && obj[i].toUpperCase() == val || i == key && val == '') {
-            objects.push(obj);
-        } else if (obj[i].toUpperCase() == val && key == '') {
-            // only add if the object is not already in the array
-            if (objects.lastIndexOf(obj) == -1) {
-                objects.push(obj);
-            } else if (i == key && val != '') {
-                // Collect the 'Title's' if the key and value are not matching, so we can show them to user
-                mMultipleTitles = mMultipleTitles.concat(' ' + '"' + obj[i] + ':');
-            } else if (i == 'Year' && val != '') {
-                // Collect the 'Year' if the key and value are not matching, so we can show them to user
-                mMultipleTitles = mMultipleTitles.concat(obj[i] + '"');
-            }
-    }
-    return objects;
-}
-}
-
-function getMatchingTitles(obj, key, val) {
-    var objects = [];
-    for (var i in obj) {
-        if (!obj.hasOwnProperty(i)) continue;
-        if (typeof obj[i] == 'object') {
-            objects = objects.concat(getMatchingTitles(obj[i], key, val));    
-        } else 
-        // if key matches and value matches or if key matches and value is not passed (eliminating the case where key matches but passed value does not)
+		// Need to convert to UpperCase only for 'Alphanumeric' Strings, Movie titles with just numbers like '300' fails.
         if (i == key && obj[i].toUpperCase() == val || i == key && val == '') {
             objects.push(obj);
         } else if (obj[i].toUpperCase() == val && key == '') {
@@ -225,11 +210,11 @@ function getMatchingTitles(obj, key, val) {
                 objects.push(obj);
             }
         } else if (i == key && val != '') {
-                // Collect the 'Title's' if the key and value are not matching, so we can show them to user
-                mMultipleTitles = mMultipleTitles.concat(' ' + '"' + obj[i] + ':');
+            // Collect the 'Title's' if the key and value are not matching, so we can show them to user
+            mMultipleTitles = mMultipleTitles.concat(' ' + '"' + obj[i] + ':');
         } else if (i == 'Year' && val != '') {
-                // Collect the 'Year' if the key and value are not matching, so we can show them to user
-                mMultipleTitles = mMultipleTitles.concat(obj[i] + '"');
+            // Collect the 'Year' if the key and value are not matching, so we can show them to user
+            mMultipleTitles = mMultipleTitles.concat(obj[i] + '"');
         }
     }
     return objects;
