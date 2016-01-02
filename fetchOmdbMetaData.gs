@@ -62,7 +62,14 @@ function searchOmdb(mYear, mTitle, rID) {
         // Lets check if there are multiple media with the same title
         // getMatchingTitles returns '0' length object when no exact matches found
         var mArr = getMatchingTitles(jsonArray, 'Title', mTitle.toUpperCase());
-        var zy = mArr.length;
+      
+      /* Five possible cases here
+         # 0 - 'No Exact Matches' found although there are results from OMDB (Array Length from 'getMatchingTitles' will be 0)
+         # 1 - 'Exact Match' of Title or both Title & Year (Array Length from 'getMatchingTitles' will be 1)
+         # 2 or higher - 'Multiple exact matches' found in the result (Array Length from 'getMatchingTitles' will be >2)
+         # 
+      
+      */
         if (mArr.length == 0) {
             // When there is no 'exact match' of title with the media found in OMDB
             rows.push([mMultipleTitles]);
@@ -70,7 +77,7 @@ function searchOmdb(mYear, mTitle, rID) {
         } else if (mArr.length == 1) {
             getOmdbMetaData(mArr, rID);
             mfound++;
-        } else if (mArr.length == 0 || mArr.length > 1) {
+        } else if (mArr.length > 1) {
             var dupTitles = 'Duplicate Titles Found:';
             for (var obj in mArr) {
                 if (mArr.hasOwnProperty(obj)) {
@@ -103,7 +110,6 @@ function getOmdbMetaData(mArr, rID) {
             mArray = JSON.parse(mData.getContentText());
 
         var rows = [];
-        // mArray.Runtime = mArray.Runtime.replace(" min", "");
         // imdbRating	tomatoRating	Metascore	Runtime	Genre	Director	Actors	Language	Plot	imdbID	Timestamp
         rows.push([mArray.Year,
             mArray.Title,
