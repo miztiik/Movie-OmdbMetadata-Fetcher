@@ -8,7 +8,7 @@
 ##################################################################################
 */
 // Global Variables & Customizable variables
-var targetSheetName = "AppScriptTest";
+var targetSheetName = "Yet2Get";
 //var searchSheet = Browser.inputBox("Enter the name of the sheet to update:");
 
 // Get the sheet from which we need to read the media title and year to get metadata
@@ -28,7 +28,10 @@ readYearTitle();
 
 Logger.log("Fetching Metadata from OMDB & Post Processing took " + (new Date().getTime() - startTime) / 1000 + " Seconds.");
 
-// Function to read the movie title and year from the sheet , assuming the previous two cells on the same row contain this data
+/*
+Function to read the movie title and year from the sheet , assuming the previous two cells on the same row contain this data
+It checks for last update column and only updates metadata when last updated is empty
+*/
 
 function readYearTitle() {
   //The last row in the "sheet" with content (excluding the header row)
@@ -38,18 +41,24 @@ function readYearTitle() {
     //Get the media year and title (assuming they are starting at 2nd Row and 3rd Column, till the end of 'lastRow')
     //var mTY = mSheet.getRange(2, 3, lastRow-1, 2).getValues();
     mTY = targetSheet.getRange(2, getColIndexByName(targetSheet, "Year"), lastRow - 1, 2).getValues();
-
+  
+  // Get the last updated date
+  var mLastUptDate = targetSheet.getRange(2, getColIndexByName(targetSheet, "Timestamp"), lastRow - 1, 1).getValues();
+  var mCount = 0;
   // Lets fetch metadata for each of the entries one by one
   for (var d = 0; d < mTY.length; d++) {
+    // Continue with search for metadata only if the last update date is empty. Probably in future this has to be checked for old updates.
+    if (mLastUptDate[d][0]) continue;
     // Lets do the metadata search only for items which has value for Title column.
     // http://goo.gl/5sEYSk http://goo.gl/i9wdMK
     if (mTY[d][1]) {
       // Preparing the 'mMultipleTitles' global variable so each time it has the proper prefix, after clearing the cache from previous iteration
       mMultipleTitles = "Multiple Titles Found:";
       searchOmdb(mTY[d][0], mTY[d][1], d + 2);
+      mCount ++;
     }
   }
-  Logger.log("Total of " + mTY.length + " rows to be updated!");
+  Logger.log("Total of " + mCount + " rows to be updated!");
 }
 
 /*
@@ -197,23 +206,17 @@ function pushData(foundMedia, targetSheet, rID, rows) {
   } else if (foundMedia == "N") {
     // Set the color, Clear the cells,Update the 'Error' message
     targetSheet.getRange(rID, 6, 1, rows[0].length).setFontColor(mNotFoundColor);
-    targetSheet.getRange(rID, 6, 1, targetSheet.getMaxColumns()).clear({
-      contentsOnly: true
-    });
+    targetSheet.getRange(rID, 6, 1, targetSheet.getLastColumn()).clear({contentsOnly: true});
     targetSheet.getRange(rID, 6, 1, rows[0].length).setValue(rows);
   } else if (foundMedia == "D") {
     // Set the color, Clear the cells,Update the 'Error' message
     targetSheet.getRange(rID, 6, 1, rows[0].length).setFontColor(mDuplicates);
-    targetSheet.getRange(rID, 6, 1, targetSheet.getMaxColumns()).clear({
-      contentsOnly: true
-    });
+    targetSheet.getRange(rID, 6, 1, targetSheet.getLastColumn()).clear({contentsOnly: true});
     targetSheet.getRange(rID, 6, 1, rows[0].length).setValues(rows);
   } else if (foundMedia == "M") {
     // Set the color, Clear the cells,Update the 'Error' message
     targetSheet.getRange(rID, 6, 1, rows[0].length).setFontColor(mMultipleColor);
-    targetSheet.getRange(rID, 6, 1, targetSheet.getMaxColumns()).clear({
-      contentsOnly: true
-    });
+    targetSheet.getRange(rID, 6, 1, targetSheet.getLastColumn()).clear({contentsOnly: true});
     targetSheet.getRange(rID, 6, 1, rows[0].length).setValues(rows);
   }
 }
