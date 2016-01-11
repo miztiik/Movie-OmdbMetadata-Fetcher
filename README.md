@@ -1,2 +1,9 @@
-# Movie-OmdbMetadata-Fetcher
-A Google App Script to read the movie year and title from Google Spreadsheet and fetch the metadata for the media through the OMDB API
+
+
+
+
+
+# About this Repo
+## Movie-OmdbMetadata-Fetcher
+
+This is the Git repo of the Docker image for 'A Google App Script to read the movie year and title from Google Spreadsheet and fetch the metadata for the media through the OMDB API'
