@@ -1,14 +1,14 @@
 /*
 ##################################################################################
 ##	Author			:	Miztiik
-##	Date   			:	03Jan2016
-##	Version			:	0.2
+##	Date   			:	29Jan2016
+##	Version			:	0.3
 ##	Description		:	This script is to used read media year and title from google spreadsheet and fetch the metadata from OMDB through their API and update the sheet
 ##	Assumptions		:	There is a header row(@Row 1) and the year and title are in columns 4 & 5 respectively
 ##################################################################################
 */
 // Global Variables & Customizable variables
-var targetSheetName = "Yet2Get";
+//var targetSheetName = "Yet2Get";
 //var searchSheet = Browser.inputBox("Enter the name of the sheet to update:");
 
 // Get the sheet from which we need to read the media title and year to get metadata
@@ -39,16 +39,14 @@ function readYearTitle() {
     //The last column in the sheet with content
     lastColumn = targetSheet.getLastColumn(),
     //Get the media year and title (assuming they are starting at 2nd Row and 3rd Column, till the end of 'lastRow')
-    //var mTY = mSheet.getRange(2, 3, lastRow-1, 2).getValues();
-    mTY = targetSheet.getRange(2, getColIndexByName(targetSheet, "Year"), lastRow - 1, 2).getValues();
+   mTY = targetSheet.getRange(2, getColIndexByName(targetSheet, "Year"), lastRow - 1, 13).getValues();
   
-  // Get the last updated date
-  var mLastUptDate = targetSheet.getRange(2, getColIndexByName(targetSheet, "Timestamp"), lastRow - 1, 1).getValues();
   var mCount = 0;
+  
   // Lets fetch metadata for each of the entries one by one
-  for (var d = 0; d < mTY.length; d++) {
-    // Continue with search for metadata only if the last update date is empty. Probably in future this has to be checked for old updates.
-    if (mLastUptDate[d][0]) continue;
+  for (var d = 0; d < mTY.length; d++) {    
+    // Continue with search for metadata only if the last update date is empty. Probably in future this has to be checked for old updates.    
+    if (mTY[d][12]) continue;    
     // Lets do the metadata search only for items which has value for Title column.
     // http://goo.gl/5sEYSk http://goo.gl/i9wdMK
     if (mTY[d][1]) {
@@ -59,6 +57,7 @@ function readYearTitle() {
     }
   }
   Logger.log("Total of " + mCount + " rows to be updated!");
+  Browser.msgBox("Total of " + mCount + " rows updated in " + (new Date().getTime() - startTime) / 1000 + " Seconds.");
 }
 
 /*
@@ -73,6 +72,9 @@ function searchOmdb(mYear, mTitle, rID) {
   mYear,
   mfound = 0,
     rows = [];
+  
+  // Convert the cell value to string and trim the string to remove empty sapces
+  mTitle = mTitle.toString().trim();
 
   // Error Codes for media found variable 'mfound'
   // 1 or higher - Found, 2 - Not able to connect to omDB API, 0 = Default state
@@ -95,7 +97,6 @@ function searchOmdb(mYear, mTitle, rID) {
     // Lets check if there are multiple media with the same title
     // getMatchingTitles returns '0' length object when no exact matches found
 
-    //var mArr = getMatchingTitles(jsonArray, 'Title', mTitle.toUpperCase());
     var mArr = getMatchingTitles(jsonArray, 'Title', mTitle);
 
     /* Five possible cases here
@@ -172,7 +173,12 @@ Function to find the active spreadsheet in which the updates are to be made
 */
 function sheetName() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
-  return ss.getSheetByName(targetSheetName);
+  var ssActiveSheet = SpreadsheetApp.getActiveSheet().getName();
+    if (ssActiveSheet == "Yet2Get" || ssActiveSheet == "Pokran") {
+      return ss.getSheetByName(ssActiveSheet);
+    } else {
+      return ss.getSheetByName("Yet2Get");      
+    }
 }
 
 /* 
@@ -180,9 +186,10 @@ Function to set the headers to the given sheet
 @param {String} Name of the sheet where the headers are to be set.
 */
 function setHeaderColumn(mSheet) {
-  mSheet.getRange(1, 1, 1, mSheet.getLastColumn()).setFontWeight('bold');
+  //mSheet.getRange(1, 1, 1, mSheet.getLastColumn()).setFontWeight('bold');
+  mSheet.getRange(1, 1, 1, 16).setFontWeight('bold');
   mSheet.getRange(1, 1, 1, 16).setBackground('#cfe2f3');
-  mSheet.getRange(1, 1, 1, mSheet.getLastColumn()).setFontColor('Black');
+  mSheet.getRange(1, 1, 1, 16).setFontColor('Black');
   var mHeaders = [];
   mHeaders = [
     ["Status", "Storage", "MyRating", "Year", "Title", "imdbRating", "tomatoRating", "Metascore", "Runtime", "Genre", "Director", "Actors", "Language", "Plot", "imdbID", "Timestamp"]
