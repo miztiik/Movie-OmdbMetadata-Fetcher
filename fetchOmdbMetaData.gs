@@ -13,6 +13,7 @@
 
 // Get the sheet from which we need to read the media title and year to get metadata
 var targetSheet = sheetName();
+var api_key = '';
 var todaysDate = Utilities.formatDate(new Date(), 'GMT+5:30', 'dd/MM/yyyy HH:mm'),
   mFoundColor = 'Black',
   mDuplicates = 'Blue',
@@ -88,7 +89,7 @@ function searchOmdb(mYear, mTitle, rID) {
     //mTitle = "Furrrrr";
     mYear = "";
   }
-  myUrl = "http://www.omdbapi.com/?s=" + mTitle + "&type=movie&y=" + mYear + "&plot=short&r=json";
+  myUrl = "http://www.omdbapi.com/?s=" + mTitle + "&type=movie&y=" + mYear + "&plot=short&r=json&apikey="+ api_key;
 
   var jsonData = UrlFetchApp.fetch(myUrl),
     jsonArray = JSON.parse(jsonData.getContentText());
@@ -112,7 +113,7 @@ function searchOmdb(mYear, mTitle, rID) {
       rows.push([mMultipleTitles]);
       pushData("M", targetSheet, rID, rows);
     } else if (mArr.length == 1) {
-      getOmdbMetaData(mArr, rID);
+      getOmdbMetaData(mArr, rID, api_key);
       mfound++;
     } else if (mArr.length > 1) {
       var dupTitles = 'Duplicate Titles Found:';
@@ -140,12 +141,13 @@ function searchOmdb(mYear, mTitle, rID) {
 @param {Array} - An array of movie titles
 @param {Number} The row to which the data needs to be written
 */
-function getOmdbMetaData(mArr, rID) {
+function getOmdbMetaData(mArr, rID, api_key) {
   for (i = 0; i < mArr.length; i++) {
     // Check if the IMDB ID is present in the array
     if (mArr.hasOwnProperty('Year') && mArr.hasOwnProperty('Title')) continue;
     // (mArr.hasOwnProperty(mArr[i].imdbID)) continue;
-    var mUrl = "http://www.omdbapi.com/?i=" + mArr[i].imdbID + "&type=movie&y=" + mArr[i].Year + "&plot=short&tomatoes=true&r=json";
+    var mUrl = "http://www.omdbapi.com/?i=" + mArr[i].imdbID + "&type=movie&y=" + mArr[i].Year + "&plot=short&tomatoes=true&r=json&apikey="+ api_key;
+    http://www.omdbapi.com/?i=tt3896198&apikey=64bd053c
     var mData = UrlFetchApp.fetch(mUrl),
       mArray = JSON.parse(mData.getContentText());
 
