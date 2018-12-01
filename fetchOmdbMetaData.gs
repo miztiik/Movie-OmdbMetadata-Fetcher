@@ -67,7 +67,7 @@ Function to search for all media for the given title in OMDB
 @param {String} The title of movie, ex The Matrix, Predestination etc
 @param {Number} The row number in the sheet ex 2, 3
 */
-function searchOmdb(mYear, mTitle, rID) {
+function searchOmdb(mYear, mTitle, rID, api_key) {
   var data,
   mTitle,
   mYear,
